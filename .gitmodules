@@ -1,0 +1,3 @@
+[submodule "dependencies/smcql"]
+	path = dependencies/smcql
+	url = https://github.com/smcql/smcql

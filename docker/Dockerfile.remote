@@ -1,0 +1,54 @@
+FROM --platform=linux/amd64 postgres:12-bookworm
+
+# Install basic tools
+RUN apt update && apt -y upgrade
+RUN apt -y install vim git-core make gnupg locales sudo wget tcpdump iproute2 net-tools iputils-ping openssh-server postgresql postgresql-contrib
+
+ # Set the locale
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=en_GB.utf8
+ENV LCALL=en_GB.utf8
+ENV LANGUAGE=en_GB.utf8
+RUN sed -i 's/\# en_GB.UTF-8/en_GB.UTF-8/g' /etc/locale.gen
+RUN echo "en_GB.UTF-8 UTF-8" >> /etc/default/locale
+RUN locale-gen
+
+# Add a dev user
+RUN adduser --quiet --disabled-password --shell /bin/bash --home /home/smcql --gecos "SMCQL" smcql
+RUN echo 'smcql ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+RUN echo "smcql:smcql" | chpasswd
+
+# Create the smcql user and give superuser permissions
+RUN echo "CREATE USER smcql LOGIN PASSWORD 'smcql'; ALTER USER smcql WITH SUPERUSER;" > /srv/create_user.sql
+RUN sudo pg_createcluster 16 main && sudo service postgresql start && sudo runuser - postgres -c "psql -f /srv/create_user.sql"
+
+# Make sure the container listens on the appropriate IP addresses
+RUN echo "host    all             all             0.0.0.0/0            scram-sha-256" | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
+RUN sed -i "60 i listen_addresses = '*'" /etc/postgresql/16/main/postgresql.conf
+
+# Install Java
+RUN mkdir -p /etc/apt/keyrings && \
+    wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc && \
+    echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list && \
+    apt update && apt -y install temurin-8-jdk
+
+# Fix SSH to force bad algorithms.  Note one pair of KEX/HostAlg
+# algorithms is for the ssh-copy-id, which uses modern crypto, and the
+# other pair is for the legacy library used by SMCQL.
+RUN bash -c 'echo -e "KexAlgorithms diffie-hellman-group14-sha256,diffie-hellman-group1-sha1\nPubkeyAcceptedKeyTypes +ssh-rsa\nHostKeyAlgorithms ssh-rsa,ecdsa-sha2-nistp256" | tee -a /etc/ssh/sshd_config'
+
+# Create a setup.sh script (in the same place as on the SMCQL broker
+# for simplicity).  (Also create the src directory since the
+# create_test_dbs.sh script checks its existence.)
+USER smcql
+
+RUN mkdir /home/smcql/smcql
+
+# Create a simplified setup script instead of using the SMCQL one
+# (since the remote databases don't need the SMCQL machinery to be
+# installed - they just need the databases to be set up).  The conf
+# directory is mounted in the docker-compose.yml file so that the
+# directory structure is comparable with the smcql repo.
+RUN bash -c 'echo -e "#!/bin/bash\n./conf/workload/testDB/create_test_dbs.sh"' > /home/smcql/smcql/setup.sh && chmod +x /home/smcql/smcql/setup.sh
+
+WORKDIR /home/smcql/smcql

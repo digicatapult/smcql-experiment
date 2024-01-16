@@ -1,0 +1,11 @@
+version: "3"
+services:
+
+  smcql_local:
+    platform: linux/amd64
+    container_name: smcql_local
+    image: smcql
+    volumes:
+      - ../sample-conf/local:/home/smcql/sample-conf
+    restart: unless-stopped
+    command: sleep infinity
