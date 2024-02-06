@@ -2,7 +2,7 @@
 This repository contains an example application of
 [SMCQL](https://github.com/smcql/smcql) developed by Johes Bater.  If
 you use this experiment for research, please consider citing the
-original paper [1](#references).
+original paper [[1](#references)].
 
 This code is for research and demonstration purposes only and is
 **not** suitable for use in production.
