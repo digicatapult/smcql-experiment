@@ -6,7 +6,7 @@ then
     exit 1
 fi
 
-if [ -z ./smcql-experiment/dependencies/smcql/setup.sh ]
+if [ ! -f ./smcql-experiment/dependencies/smcql/setup.sh ]
 then
     echo "Please run 'git submodule update --init --recursive' and then run this script again"
     exit 1
