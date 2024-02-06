@@ -41,7 +41,7 @@ then
     
         # Set up SSH keys
         docker exec smcql_site$i sudo service ssh start
-        docker exec -u smcql smcql_broker sshpass -p smcql ssh-copy-id 172.19.0.1$i
+        docker exec -u smcql smcql_broker sshpass -p smcql ssh-copy-id 172.123.0.1$i
 
         # Start database server
         docker exec smcql_site$i sudo service postgresql start

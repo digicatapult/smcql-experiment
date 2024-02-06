@@ -6,8 +6,11 @@ then
     exit 1
 fi
 
-echo "Cloning SCMQL..."
-cd dependencies && rm -rf smcql 2>/dev/null && git clone https://github.com/smcql/smcql.git && cd smcql && git apply ../smcql-fixes.diff && cd ../..
+if [ -z ./smcql-experiment/dependencies/smcql ]
+then
+    echo "Please run 'git submodule update --init --recursive' and then run this script again"
+    exit 1
+fi
 
 echo "Building docker containers..."
 docker build --file ./docker/Dockerfile --progress plain -t "smcql" .
