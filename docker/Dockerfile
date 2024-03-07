@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 postgres:12-bookworm
+FROM --platform=linux/amd64 postgres:16-bookworm
 
 # Install basic tools
 RUN apt update && apt -y upgrade
