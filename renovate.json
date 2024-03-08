@@ -3,9 +3,7 @@
   "extends": [
     "local>digicatapult/renovate-config"
   ],
-  {
   "git-submodules": {
     "enabled": true
     }
-  }
 }
