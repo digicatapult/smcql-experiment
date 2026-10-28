@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 postgres:18-bookworm
+FROM --platform=linux/amd64 postgres:18.6-bookworm@sha256:5c4783a8cc3f0074912164f94dfa1be4e043438f0f707cf968d7af9a0d31a2c8
 
 # Install basic tools
 RUN apt update && apt -y upgrade
